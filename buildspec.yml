@@ -1,0 +1,26 @@
+version: 0.1
+
+phases:
+  install:
+    commands:
+      - apt-get update -y
+  pre_build:
+    commands:
+      - chmod 700 package.sh
+  build:
+    commands:
+      - echo Building Express lambda
+      - cd src/express && npm install
+  post_build:
+    commands:
+      - echo Packaging SAM spec artifacts
+      - ./package.sh
+
+artifacts:
+  type: zip
+  files:
+    # Development SAM spec artifact
+    - sam-output-dev.yml
+
+    # Production SAM spec artifact
+    - sam-output-prod.yml

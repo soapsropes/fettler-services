@@ -1,0 +1,14 @@
+node_modules/
+
+.*.swp
+
+config/*.json
+!config/env.example.json
+
+setup/pipeline-config.sh
+
+api-swagger-partial.json
+api-swagger.json
+
+sam-output*.yml
+

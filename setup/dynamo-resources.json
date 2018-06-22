@@ -1,0 +1,48 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "Dynamo resources for Fettler services",
+	"Resources": {
+		"ProfilesTable": {
+			"Type": "AWS::DynamoDB::Table",
+			"DeletionPolicy": "Retain",
+			"Properties": {
+				"TableName": { "Fn::Sub": "${EnvProjectName}-Profiles" },
+				"AttributeDefinitions": [
+					{
+						"AttributeName": "userId",
+						"AttributeType": "S"
+					}
+				],
+				"KeySchema": [
+					{
+						"AttributeName": "userId",
+						"KeyType": "HASH"
+					}
+				],
+				"ProvisionedThroughput": {
+					"ReadCapacityUnits": { "Ref": "ProfilesRCU" },
+					"WriteCapacityUnits": { "Ref": "ProfilesWCU" }
+				}
+			}
+		}
+	},
+	"Parameters": {
+		"EnvProjectName": {
+			"Type": "String",
+			"Description": "Environment-specific project name for use in identifiers (e.g., \"Fettler-Prod\")",
+			"AllowedPattern": "[A-Za-z0-9\\-]*"
+		},
+		"ProfilesRCU": {
+			"Type": "Number",
+			"Description": "Read Capacity Units for Profiles table",
+			"Default": 1,
+			"MinValue": 1
+		},
+		"ProfilesWCU": {
+			"Type": "Number",
+			"Description": "Write Capacity Units for Profiles table",
+			"Default": 1,
+			"MinValue": 1
+		}
+	}
+}

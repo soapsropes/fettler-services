@@ -1,0 +1,83 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Transform": "AWS::Serverless-2016-10-31",
+	"Description": "Fettler services",
+	"Parameters": {
+		"S3PathConfigEnv": {
+			"Type": "String",
+			"Description": "S3 path of environment config (e.g., \"s3://your-config-bucket/codebuild/fettler-services/dev.json\")"
+		}
+	},
+	"Mappings": {
+		"Config": {
+			"Env": {
+				"Fn::Transform": {
+					"Name": "AWS::Include",
+					"Parameters": {
+						"Location": { "Ref": "S3PathConfigEnv" }
+					}
+				}
+			}
+		}
+	},
+	"Resources": {
+		"FettlerApi": {
+			"Type": "AWS::Serverless::Api",
+			"Properties": {
+				"DefinitionUri": "api-swagger.json",
+				"StageName": "Api",
+				"MethodSettings": [{
+					"LoggingLevel": "INFO",
+					"DataTraceEnabled": true,
+					"ResourcePath": "/*",
+					"HttpMethod": "*"
+				}],
+				"Variables": {
+					"ExpressFunction": { "Ref": "ExpressFunction" }
+				}
+			}
+		},
+		"ExpressFunction": {
+			"Type": "AWS::Serverless::Function",
+			"Properties": {
+				"FunctionName": { "Fn::Sub": "${AWS::StackName}-Express" },
+				"Description": "Express API handler",
+				"CodeUri": "src/express/",
+				"Handler": "lambda.handler",
+				"Runtime": "nodejs8.10",
+				"MemorySize": 1024,
+				"Timeout": 10,
+				"Tracing": "Active",
+				"Policies": [
+					"AWSXrayWriteOnlyAccess",
+					{ "DynamoDBCrudPolicy": {
+						"TableName": { "Fn::FindInMap": ["Config", "Env", "DynamoTableProfiles"] }
+					}}
+				],
+				"Environment": {
+					"Variables": {
+						"DynamoTableProfiles": { "Fn::FindInMap": ["Config", "Env", "DynamoTableProfiles"] }
+					}
+				},
+				"Events": {
+					"ExpressProxyApiRoot": {
+						"Type": "Api",
+						"Properties": {
+							"RestApiId": { "Ref": "FettlerApi" },
+							"Path": "/",
+							"Method": "ANY"
+						}
+					},
+					"ExpressProxyApiGreedy": {
+						"Type": "Api",
+						"Properties": {
+							"RestApiId": { "Ref": "FettlerApi" },
+							"Path": "/{proxy+}",
+							"Method": "ANY"
+						}
+					}
+				}
+			}
+		}
+	}
+}
