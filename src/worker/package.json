@@ -1,0 +1,23 @@
+{
+  "name": "fettler-worker",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joe Soap <joe.soap.ws@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.12.0"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.262.1",
+    "boom": "^7.2.0",
+    "fetlife": "^0.3.0",
+    "lodash": "^4.17.10",
+    "nice-lambda": "^1.0.0"
+  }
+}
