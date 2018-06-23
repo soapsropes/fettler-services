@@ -91,6 +91,7 @@ const processProfile = async (profile) => {
 
 			console.log(`Disabling profile for user id ${profile.userId}`);
 			profile.enabled = false;
+			profile.autoDisabledAt = new Date().toISOString();
 		}
 	}
 
