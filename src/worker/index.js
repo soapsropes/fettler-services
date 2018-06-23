@@ -23,7 +23,7 @@ const acceptFriendRequests = async (profile, fetlife) => {
 	console.log(`[${profile.nickname}] Auto-accept friend requests enabled`);
 
 	const friendRequests = await fetlife.getFriendRequests();
-	console.log(`[${profile.nickname}] ${friendRequests.length} friend request(s)`);
+	console.log(`[${profile.nickname}] Received ${friendRequests.length} friend request(s)`);
 
 	const results = await Promise.all(friendRequests.map((friendRequest) => {
 		console.log(`[${profile.nickname}] Accepting friend request ${friendRequest.id} from ${friendRequest.member.nickname}`);
@@ -83,11 +83,13 @@ const processProfile = async (profile) => {
 	} catch (error) {
 		console.error(`Failed to process profile for user id ${profile.userId} (${profile.nickname}): ${error}`);
 
-		if (Boom.isBoom(error) && error.typeof === Boom.unauthorized) {
+		if (Boom.isBoom(error) && error.output.statusCode === 401) {
 			if (_.has(profile, 'token')) {
+				console.log(`Removing token for user id ${profile.userId}`);
 				delete profile.token;
 			}
 
+			console.log(`Disabling profile for user id ${profile.userId}`);
 			profile.enabled = false;
 		}
 	}
