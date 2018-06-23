@@ -11,6 +11,7 @@ phases:
     commands:
       - echo Building Express lambda
       - cd src/express && npm install
+      - cd src/worker && npm install
   post_build:
     commands:
       - echo Packaging SAM spec artifacts
