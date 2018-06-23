@@ -78,6 +78,39 @@
 					}
 				}
 			}
+		},
+		"WorkerFunction": {
+			"Type": "AWS::Serverless::Function",
+			"Properties": {
+				"FunctionName": { "Fn::Sub": "${AWS::StackName}-Worker" },
+				"Description": "Profile processing worker",
+				"CodeUri": "src/worker/",
+				"Handler": "index.handler",
+				"Runtime": "nodejs8.10",
+				"MemorySize": 1024,
+				"Timeout": 10,
+				"Tracing": "Active",
+				"Policies": [
+					"AWSXrayWriteOnlyAccess",
+					{ "DynamoDBCrudPolicy": {
+						"TableName": { "Fn::FindInMap": ["Config", "Env", "DynamoTableProfiles"] }
+					}}
+				],
+				"Environment": {
+					"Variables": {
+						"DynamoTableProfiles": { "Fn::FindInMap": ["Config", "Env", "DynamoTableProfiles"] }
+					}
+				},
+				"Events": {
+					"CronSchedule": {
+						"Type": "Schedule",
+						"Properties": {
+							"Schedule": "cron(0/15 * * * ? *)",
+							"Input": "{}"
+						}
+					}
+				}
+			}
 		}
 	}
 }
