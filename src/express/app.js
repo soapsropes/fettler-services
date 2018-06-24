@@ -3,6 +3,7 @@
 const express = require('express');
 const { eventContext } = require('aws-serverless-express/middleware');
 const logger = require('morgan');
+const cors = require('cors');
 const {
 	gatherTokenFromBody,
 	gatherUserFromToken,
