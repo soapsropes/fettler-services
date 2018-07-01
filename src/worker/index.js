@@ -65,6 +65,7 @@ const processProfile = async (profile) => {
 				console.log(`Old expiration: ${profile.token.expires_at}`);
 				console.log(`New expiration: ${newToken.expires_at}`);
 				profile.token = newToken;
+				profile.lastRefreshedAt = new Date().toISOString();
 			},
 		});
 
