@@ -54,7 +54,7 @@ const markReadUnsolicited = async (profile, fetlife) => {
 	const conversations = await fetlife.getConversations();
 	console.log(`[${profile.nickname}] Reviewing ${conversations.length} conversation(s)`);
 
-	const results = Promise.all(conversations.map(async (conversation) => {
+	const results = await Promise.all(conversations.map(async (conversation) => {
 		if (!conversation.has_new_messages) {
 			return null;
 		}
