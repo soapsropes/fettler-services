@@ -7,10 +7,17 @@ const { putProfile } = require('../../lib/data/profiles');
 
 const router = express.Router({ mergeParams: true });
 
+const flags = [
+	'enabled',
+	'autoAccept',
+	'autoMarkReadUnsolicited',
+	'autoMarkReadUnsolicitedFromMaleOnly',
+];
+
 const updateProfile = api((req, res) => {
 	const profile = _.cloneDeep(res.locals.profile);
 
-	['enabled', 'autoAccept'].forEach((flag) => {
+	flags.forEach((flag) => {
 		if (_.has(req.body, flag)) {
 			profile[flag] = !!req.body[flag];
 		}

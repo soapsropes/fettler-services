@@ -48,8 +48,8 @@ const acceptFriendRequests = async (profile, fetlife) => {
 };
 
 const markReadUnsolicited = async (profile, fetlife) => {
-	const fromMenOnly = profile.autoMarkReadUnsolicitedFromMenOnly;
-	console.log(`[${profile.nickname}] Auto-mark read unsolicited messages enabled${fromMenOnly ? ' (from men only)' : ''}`);
+	const fromMaleOnly = profile.autoMarkReadUnsolicitedFromMaleOnly;
+	console.log(`[${profile.nickname}] Auto-mark read unsolicited messages enabled${fromMaleOnly ? ' (from "Male" only)' : ''}`);
 
 	const conversations = await fetlife.getConversations();
 	console.log(`[${profile.nickname}] Reviewing ${conversations.length} conversation(s)`);
@@ -65,7 +65,7 @@ const markReadUnsolicited = async (profile, fetlife) => {
 			return null;
 		}
 
-		if (fromMenOnly && member.gender.name !== 'Male') {
+		if (fromMaleOnly && member.gender.name !== 'Male') {
 			return null;
 		}
 
