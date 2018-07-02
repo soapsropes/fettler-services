@@ -11,7 +11,7 @@ const {
 
 const getStats = results =>
 	_.reduce(
-		results,
+		results.filter(v => v !== null),
 		(s, v) => {
 			s[v ? 'success' : 'failure'] += 1;
 			return s;
@@ -47,6 +47,65 @@ const acceptFriendRequests = async (profile, fetlife) => {
 	}
 };
 
+const markReadUnsolicited = async (profile, fetlife) => {
+	const fromMenOnly = profile.autoMarkReadUnsolicitedFromMenOnly;
+	console.log(`[${profile.nickname}] Auto-mark read unsolicited messages enabled${fromMenOnly ? ' (from men only)' : ''}`);
+
+	const conversations = await fetlife.getConversations();
+	console.log(`[${profile.nickname}] Reviewing ${conversations.length} conversation(s)`);
+
+	const results = Promise.all(conversations.map(async (conversation) => {
+		if (!conversation.has_new_messages) {
+			return null;
+		}
+
+		const member = await fetlife.getMember(conversation.member.id);
+
+		if (member.relation_with_me === 'friend' || member.relation_with_me === 'following') {
+			return null;
+		}
+
+		if (fromMenOnly && member.gender.name !== 'Male') {
+			return null;
+		}
+
+		const messages = await fetlife.getConversationMessages(conversation.id);
+
+		const anyFromMe = _.find(messages, message => message.member.id === profile.id);
+
+		if (anyFromMe) {
+			return null;
+		}
+
+		const unreadIds = messages.filter(message => message.is_new)
+			.map(message => message.id);
+
+		if (unreadIds.length === 0) {
+			return null;
+		}
+
+		console.log(`[${profile.nickname}] Mark ${unreadIds.length} message(s) read in conversation id ${conversation.id} from ${conversation.member.nickname} (${conversation.member.meta_line})`);
+
+		return fetlife.markConversationMessagesRead(conversation.id, unreadIds)
+			.then(() => {
+				console.log(`[${profile.nickname}] Marked ${unreadIds.length} message(s) read from ${conversation.member.nickname} (${conversation.member.meta_line})`);
+				return true;
+			})
+			.catch((error) => {
+				console.error(`[${profile.nickname}] Failed to mark ${unreadIds.length} message(s) read from ${conversation.member.nickname} (${conversation.member.meta_line}): ${error}`);
+				return false;
+			});
+	}));
+
+	const stats = getStats(results);
+
+	console.log(`[${profile.nickname}] Marked ${stats.success} unsolicited conversation(s) read`);
+
+	if (stats.failure > 0) {
+		console.error(`[${profile.nickname}] Failed to mark ${stats.failure} unsolicited conversation(s) read`);
+	}
+};
+
 const processProfile = async (profile) => {
 	console.log(`Process profile for user id ${profile.userId} (${profile.nickname})`);
 
@@ -78,6 +137,10 @@ const processProfile = async (profile) => {
 
 		if (profile.autoAccept) {
 			await acceptFriendRequests(profile, fetlife);
+		}
+
+		if (profile.autoMarkReadUnsolicited) {
+			await markReadUnsolicited(profile, fetlife);
 		}
 
 		processed = true;
